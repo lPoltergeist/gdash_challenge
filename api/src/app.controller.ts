@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AppService } from './app.service';
+import { WeatherData } from './schema/weatherData.schema';
 
 @Controller()
 export class AppController {
@@ -11,7 +12,8 @@ export class AppController {
   }
 
   @Post('weather')
-  postWeatherData(@Body() data: any) {
-    this.appService.postWeatherData(data);
+  postWeatherData(@Body() data: WeatherData) {
+    this.appService.insertWeather(data);
+    console.log('Weather data inserted');
   }
 }

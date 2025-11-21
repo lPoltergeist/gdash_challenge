@@ -20,7 +20,36 @@ services:
       resources:
         limits:
           cpus: "0.3"
-          memory: 512M
+          memory: 250M
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_data:/data/db
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 1G
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_BASICAUTH: "false"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 250M
 
   collector:
     build: ./collector
@@ -35,7 +64,7 @@ services:
       resources:
         limits:
           cpus: "0.2"
-          memory: 20M
+          memory: 50M
 
   worker:
     build:
@@ -72,7 +101,8 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: 512M
+          memory: 250M
 
 volumes:
   rabbitmq_data:
+  mongo_data:

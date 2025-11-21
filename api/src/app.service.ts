@@ -1,4 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { WeatherData, WeatherDataDocument } from './schema/weatherData.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class AppService {
@@ -6,8 +9,10 @@ export class AppService {
     return 'Service is running';
   }
 
-  postWeatherData(data: any) {
-    console.log('Weather data received:', data);
+  constructor(@InjectModel(WeatherData.name) private weatherModel: Model<WeatherDataDocument>) { }
 
+  async insertWeather(data: WeatherData): Promise<WeatherData> {
+    const createdData = new this.weatherModel(data);
+    return createdData.save();
   }
 }
