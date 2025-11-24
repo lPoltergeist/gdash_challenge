@@ -10,9 +10,11 @@ BASE_URL = f"https://api.openweathermap.org/data/2.5/weather"
 PARAMS = {
     "q": CITY,
     "appid": API_KEY,
+    "lang": "pt_br",
+    "units": "metric",
 }
 
-INTERVAL = 10
+INTERVAL = 60 
 
 RABBITMQ_HOST = 'rabbitmq'
 RABBITMQ_PASS = 'rabbitmq'

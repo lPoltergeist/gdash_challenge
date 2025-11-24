@@ -89,7 +89,7 @@ func Start(payment model.WeatherData) error {
 		defer res.Body.Close()
 		io.Copy(io.Discard, res.Body)
 
-		if res.StatusCode == 200 {
+		if res.StatusCode == 201 {
 			return nil
 		}
 

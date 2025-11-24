@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { WeatherController } from './modules/weather/weather.controller';
+import { WeatherService } from './modules/weather/weather.service';
 import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
@@ -9,7 +9,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
     MongooseModule.forFeature([{ name: 'WeatherData', schema: require('./schema/weatherData.schema').WeatherDataSchema }]),
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [WeatherController],
+  providers: [WeatherService],
 })
 export class AppModule { }

@@ -10,10 +10,10 @@ services:
       RABBITMQ_DEFAULT_USER: rabbitmq
       RABBITMQ_DEFAULT_PASS: rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]
-      interval: 5s
-      retries: 5
-      timeout: 5s
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      retries: 10
+      timeout: 10s
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     deploy:
@@ -30,6 +30,9 @@ services:
       - "27018:27017"
     volumes:
       - mongo_data:/data/db
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -45,6 +48,9 @@ services:
       ME_CONFIG_MONGODB_SERVER: mongodb
       ME_CONFIG_MONGODB_PORT: 27017
       ME_CONFIG_BASICAUTH: "false"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -89,6 +95,8 @@ services:
     build:
       context: ./api
       dockerfile: Dockerfile.api
+    env_file:
+      - ./api/.env
     container_name: api
     ports:
       - "3000:3000"
@@ -101,7 +109,7 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: 250M
+          memory: 500M
 
 volumes:
   rabbitmq_data:
