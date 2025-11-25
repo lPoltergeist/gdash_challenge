@@ -1,18 +1,18 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { WeatherService } from './user.service';
-import { WeatherData } from '../../schema/weatherData.schema';
+import { UserService } from './user.service';
+import { UserData } from 'src/schema/userData.schema';
 
 @Controller()
-export class WeatherController {
-  constructor(private readonly appService: WeatherService) { }
+export class UserController {
+  constructor(private readonly appService: UserService) { }
 
   @Get('users')
-  getUser(): string {
-    return this.appService.getStatus();
+  getUser(): any {
+    return this.appService.getUsers();
   }
 
   @Post('users')
-  postWeatherData(@Body() data: WeatherData) {
-    this.appService.insertWeather(data);
+  postWeatherData(@Body() data: UserData) {
+    return this.appService.createUser(data);
   }
 }

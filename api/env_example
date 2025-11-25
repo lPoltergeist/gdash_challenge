@@ -1,1 +1,2 @@
 GEMINI_APIKEY=Your API KEY here!
+JWT_SECRET=And your SECRET here!

@@ -1,56 +1,39 @@
 import { Injectable } from '@nestjs/common';
-import { WeatherData, WeatherDataDocument } from '../../schema/weatherData.schema';
+import { UserData, UserDataDocument } from '../../schema/userData.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { GoogleGenAI } from '@google/genai';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class Service {
-  constructor(@InjectModel(WeatherData.name) private weatherModel: Model<WeatherDataDocument>) { }
+export class UserService {
+  constructor(@InjectModel(UserData.name) private userModel: Model<UserDataDocument>) { }
 
-  getStatus(): string {
-    return 'Service is running';
+  getUsers(): Promise<UserData | any> {
+    let userData: Promise<UserData | any>;
+
+    //if (data.email) return this.userModel.findOne({ email: data.email }).exec();
+
+    userData = this.userModel.find().exec();
+    return userData;
   }
 
-  async insertWeather(data: WeatherData): Promise<WeatherData> {
-    const createdData = new this.weatherModel(data);
-    return createdData.save();
-  }
+  async createUser(data: UserData): Promise<UserData[] | any> {
+    const usersData = await this.userModel.findOne({ email: data.email }).exec();
 
-  returnAllWeather(): Promise<WeatherData[]> {
-    const weatherData = this.weatherModel.find().exec();
-    console.log('Fetching all weather data', weatherData);
-
-    if (weatherData == null || weatherData === undefined) {
-      throw new Error('No weather data found');
+    if (usersData) {
+      throw new Error('Email already registered');
     }
 
-    return weatherData;
-  }
-
-  async genAIWeatherInsight(): Promise<string | undefined> {
-    const client = new GoogleGenAI({
-      apiKey: process.env.GEMINI_APIKEY!,
-    })
-    const data = await this.weatherModel.findOne().sort({ _id: -1 }).exec();
-
-    if (!data) {
-      throw new Error('No weather data available for insight generation');
+    const userData = {
+      email: data.email,
+      name: data.name,
+      password: await bcrypt.hash(data.password, 10),
     }
 
-    const response = await client.models.generateContent({
-      model: "gemini-2.5-flash-lite",
-      contents: `Gere um insight sobre os seguintes dados meteorológicos em português do Brasil, que seja curto, informativo e humorístico:
-      Temperatura: ${data.main.temp}°C
-      Humidade: ${data.main.humidity}%
-      Vento: ${data.wind.speed} m/s
-      Tempo: ${data.weather[0].description}%
-      
-      obs: Não comece o insight com "O insight é" ou algo parecido.`,
-    })
+    const createdData = new this.userModel(userData);
 
-    if (response.text === undefined) return "No insight generated"
+    await createdData.save();
 
-    return response.text;
+    return this.userModel.findOne({ email: data.email }).select('_id email name').exec();
   }
 }

@@ -1,15 +1,17 @@
 import { Module } from '@nestjs/common';
-import { WeatherController } from './modules/weather/weather.controller';
-import { WeatherService } from './modules/weather/weather.service';
 import { MongooseModule } from '@nestjs/mongoose';
+
+import { WeatherModule } from './schema/weather.module';
+import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://mongodb:27017/weatherdb'),
+    MongooseModule.forRoot('mongodb://mongodb:27017/weather'),
 
-    MongooseModule.forFeature([{ name: 'WeatherData', schema: require('./schema/weatherData.schema').WeatherDataSchema }]),
+    WeatherModule,
+    UserModule,
+    AuthModule,
   ],
-  controllers: [WeatherController],
-  providers: [WeatherService],
 })
 export class AppModule { }
