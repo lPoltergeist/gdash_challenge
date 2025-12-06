@@ -4,6 +4,9 @@ import (
 	"fmt"
 
 	ampq "github.com/rabbitmq/amqp091-go"
+	"go.uber.org/zap"
+
+	"gdash/challenge/logger"
 )
 
 var (
@@ -20,11 +23,19 @@ func InitRabbitMQ() error {
 
 	conn, err := ampq.Dial(uri)
 	if err != nil {
+
+		logger.Log.Info("Failed to connect to RabbitMQ",
+					zap.Error(err))
+
 		return fmt.Errorf("failed to connect to RabbitMQ: %w", err)
 	}
 
 	ch, err := conn.Channel()
 	if err != nil {
+
+		logger.Log.Info("Failed to open a channel",
+					zap.Error(err))
+
 		return fmt.Errorf("failed to open a channel: %w", err)
 	}
 

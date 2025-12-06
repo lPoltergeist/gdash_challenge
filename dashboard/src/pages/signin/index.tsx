@@ -39,7 +39,7 @@ const SignIn = () => {
             return
         }
 
-        api.post('/auth', {
+        api.post('/auth/login', {
             email: email,
             password: password
         }, {

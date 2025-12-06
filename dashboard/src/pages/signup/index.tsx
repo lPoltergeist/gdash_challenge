@@ -52,7 +52,7 @@ const SignUp = () => {
         }, {
             withCredentials: true,
         }).then(() => {
-            return api.post('/auth', {
+            return api.post('/auth/login', {
                 email,
                 password
             }, { withCredentials: true });

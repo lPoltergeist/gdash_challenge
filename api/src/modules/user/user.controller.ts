@@ -1,18 +1,28 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserData } from 'src/schema/userData.schema';
 
 @Controller()
 export class UserController {
-  constructor(private readonly appService: UserService) { }
+  constructor(private readonly userService: UserService) { }
 
-  @Get('users')
+  @Get('api/users')
   getUser(): any {
-    return this.appService.getUsers();
+    return this.userService.getUsers();
   }
 
-  @Post('users')
-  postWeatherData(@Body() data: UserData) {
-    return this.appService.createUser(data);
+  @Post('api/users')
+  postUserData(@Body() data: UserData) {
+    return this.userService.createUser(data);
+  }
+
+  @Delete('/api/users/:id')
+  deleteUserData(@Param() id: string) {
+    return this.userService.deleteUser(id)
+  }
+
+  @Put('/api/users/:id')
+  updateUserData(@Param() id: string, @Body() data: UserData) {
+    return this.userService.updateUser(id, data)
   }
 }

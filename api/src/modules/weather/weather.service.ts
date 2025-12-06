@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadGatewayException, Injectable } from '@nestjs/common';
 import { WeatherData, WeatherDataDocument } from '../../schema/weatherData.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { GoogleGenAI } from '@google/genai';
+import { Parser } from '@json2csv/plainjs/index.js';
+import * as ExcelJS from 'exceljs';
 
 @Injectable()
 export class WeatherService {
@@ -48,4 +50,38 @@ export class WeatherService {
 
     return response.text;
   }
+
+  async returnWeatherCSV(): Promise<string> {
+    const weatherData = await this.weatherModel.find().sort({ _id: -1 }).lean().exec()
+
+    if (!weatherData) throw new BadGatewayException
+
+    const parser = new Parser()
+    const weatherCSV = parser.parse(weatherData)
+
+    return weatherCSV
+  }
+
+  async returnWeatherXLSX(): Promise<ArrayBuffer> {
+    const weatherData = await this.weatherModel.find().sort({ _id: -1 }).lean().exec()
+
+    if (!weatherData) throw new BadGatewayException
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Weather');
+
+    worksheet.columns = Object.keys(weatherData[0]).map((key) => ({
+      header: key,
+      key
+    }))
+
+    weatherData.forEach((item) => {
+      worksheet.addRow(item)
+    })
+
+    const weatherXLSX = await workbook.xlsx.writeBuffer();
+
+    return weatherXLSX
+  }
+
 }

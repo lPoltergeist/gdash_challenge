@@ -8,7 +8,7 @@ import { PassThrough } from 'stream';
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
-    @Post('auth')
+    @Post('api/auth/login')
     async login(@Body() data: UserData, @Res({ passthrough: true }) res: express.Response): Promise<UserData | any> {
         const result = await this.authService.login(data);
 
@@ -24,20 +24,20 @@ export class AuthController {
         return result.user
     }
 
-    @Get('logout')
+    @Get('api/auth/logout')
     async logout(@Req() req: express.Request) {
         const token = req.cookies['token']
         this.authService.logout(token)
     }
 
-    @Get('auth/me')
+    @Get('api/auth/me')
     async isAuthenticated(@Req() req: express.Request) {
         const token = req.cookies['token']
         if (!token) throw new UnauthorizedException
         return this.authService.isAuthenticated(token)
     }
 
-    @Get('debug-cookies')
+    @Get('api/debug-cookies')
     debugCookies(@Req() req: any) {
         console.log("COOKIES RECEBIDOS:", req.cookies);
         return req.cookies;

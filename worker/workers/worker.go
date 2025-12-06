@@ -9,7 +9,9 @@ import (
 	"os"
 	"time"
 
-	"gdash/challenge/model"
+	"go.uber.org/zap"
+
+	"gdash/challenge/logger"
 	"gdash/challenge/queue"
 )
 
@@ -18,46 +20,54 @@ var client = &http.Client{
 }
 
 func InitWorkers(n int) {
-	weatherChan := make(chan model.WeatherData, 5)
+	weatherChan := make(chan queue.WeatherMessage, 5)
 
 	go func() {
 		defer close(weatherChan)
 
 		ch := queue.Consumer()
-		fmt.Printf("Worker: Consumer started\n")
 
-		for data := range ch {
-			fmt.Printf("Worker: Received weather data: %+v\n", data)
-			weatherChan <- data
+		for msg := range ch {
+
+			logger.Log.Info("Received message",
+				zap.Any("payload", msg.Data),
+				zap.String("message_id", msg.Msg.MessageId))
+
+			weatherChan <- msg
 		}
 	}()
 
 	for i := 0; i < n; i++ {
 		go func(id int) {
-			fmt.Printf("Worker %d started\n", id)
-			for weatherData := range weatherChan {
-				if err := Start(weatherData); err != nil {
-					fmt.Printf("Worker %d failed to process weather: %v\n", id, err)
+			for weatherMsg := range weatherChan {
+				if err := Start(weatherMsg); err != nil {
+
+					logger.ErrorLog("Failed to unmarshal message",
+						err, weatherMsg.Data, weatherMsg.Msg.MessageId)
+
+					weatherMsg.Msg.Nack(false, true)
 					continue
 				}
-
 			}
 		}(i)
 	}
 }
 
-func Start(payment model.WeatherData) error {
+func Start(msg queue.WeatherMessage) error {
 
 	defer func() {
 		if r := recover(); r != nil {
-			panic(r)
+			msg.Msg.Nack(false, true)
 		}
 	}()
 
-	jsonBody, err := json.Marshal(payment)
+	jsonBody, err := json.Marshal(msg.Data)
 
 	if err != nil {
-		return fmt.Errorf("failed to marshal weather data: %w", err)
+		logger.ErrorLog("Failed to unmarshal message",
+			err, msg.Data, msg.Msg.MessageId)
+
+		return err
 	}
 
 	baseSleepTime := 10
@@ -67,14 +77,20 @@ func Start(payment model.WeatherData) error {
 
 	for attempts := 0; attempts <= 10; attempts++ {
 		url := url
-		sleepTime := baseSleepTime * (1 << attempts)
+		sleepTime := baseSleepTime * (3 << attempts)
 
-		fmt.Printf("Worker: Posting weather data to %s. Attempt %d\n", url, attempts+1)
+		logger.Log.Info("Worker: Posting weather data to",
+			zap.String("url", url),
+			zap.Any("Attempt", attempts+1))
 
 		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
-		fmt.Print("Posting to ", url, "\n")
+
 		if err != nil {
-			fmt.Printf("Error: %v\n", err)
+
+			logger.ErrorLog("Failed to unmarshal message",
+				err, msg.Data, msg.Msg.MessageId)
+			msg.Msg.Nack(false, true)
+
 			continue
 		}
 
@@ -82,7 +98,11 @@ func Start(payment model.WeatherData) error {
 
 		res, err := client.Do(req)
 		if err != nil {
-			fmt.Printf("Error: %v\n", err)
+
+			logger.ErrorLog("Failed to do a request",
+				err, msg.Data, msg.Msg.MessageId)
+
+			msg.Msg.Nack(false, true)
 			continue
 		}
 
@@ -90,11 +110,13 @@ func Start(payment model.WeatherData) error {
 		io.Copy(io.Discard, res.Body)
 
 		if res.StatusCode == 201 {
+			msg.Msg.Ack(false)
 			return nil
 		}
 
 		time.Sleep(time.Duration(sleepTime) * time.Millisecond)
 	}
 
+	msg.Msg.Nack(false, true)
 	return nil
 }

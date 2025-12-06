@@ -14,7 +14,7 @@ function Navbar() {
     const navigate = useNavigate()
 
     const logout = () => {
-        api.get('/logout', {
+        api.get('/auth/logout', {
             withCredentials: true,
         }).then(() => {
             notify("Deslogado com sucesso!")

@@ -6,7 +6,7 @@ import * as quotable from 'src/DTO/quotable';
 export class QuotableController {
   constructor(private readonly appService: QuotableService) { }
 
-  @Post('quotable')
+  @Post('api/quotable')
   postQuotable(@Body() endpoint: quotable.QuoteBody) {
     return this.appService.getQuotes(endpoint);
   }

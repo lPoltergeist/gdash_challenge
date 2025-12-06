@@ -1,10 +1,12 @@
 import json
+import logging
+import os
 import time
 import requests
 # type: ignore
 import pika
 
-API_KEY = "bde28fb61f5e494f1dafd2ec0302d91b"
+API_KEY = os.getenv("OPENWEATHER_KEY")
 CITY = "Rio de Janeiro"
 BASE_URL = f"https://api.openweathermap.org/data/2.5/weather"
 PARAMS = {
@@ -19,6 +21,18 @@ INTERVAL = 60 * 60
 RABBITMQ_HOST = 'rabbitmq'
 RABBITMQ_PASS = 'rabbitmq'
 RABBITMQ_USER = 'rabbitmq'
+
+LOG_DIR = "logs"
+
+print(API_KEY)
+
+os.makedirs(LOG_DIR, exist_ok=True)
+
+logging.basicConfig(
+    filename=f"{LOG_DIR}/errors.log",
+    level=logging.ERROR,
+    format="%(asctime)s - %(levelname)s - %(message)s" 
+)
 
 
 def create_channel(): 
@@ -38,11 +52,11 @@ def get_weather_data():
         response.raise_for_status()
         weatherData = response.json()
     except requests.exceptions.RequestException as e:
-        print("HTTP Request failed:", e)
+        logging.error("HTTP Request failed: %s", e)
         return None
     
     if weatherData["cod"] != 200:
-         print("Error in the HTTP request")
+         logging.error("HTTP Request failed: %s", e)
          return None
     
     print("Weather data collected!")

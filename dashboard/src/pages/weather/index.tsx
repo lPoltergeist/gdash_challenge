@@ -1,5 +1,7 @@
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import getWeatherIcon from '@/components/weatherDashboard/dinamicWeatherIcon'
+import GetFilesModal from '@/components/weatherDashboard/getFilesModal'
 import WeatherCard from '@/components/weatherDashboard/weatherCard'
 import formatSunTime from '@/helper/formatSunTime'
 import returnDateNow from '@/helper/returnDateNow'
@@ -10,9 +12,33 @@ const WeatherDashboard = () => {
     const [weather, setWeather] = useState<any>(null)
     const [weatherInsight, setWeatherInsight] = useState<any>()
     const [dateNow, setDateNow] = useState<string>()
+    const [openModal, setOpenModal] = useState<boolean>(false)
 
     let lastIndex = 0
     if (weather) lastIndex = weather.length - 1;
+
+    const handleSelect = (format: any) => {
+        setOpenModal(false)
+
+        api.get(`/${format}`, {
+            responseType: "blob",
+        }).then((response) => {
+            const blob = new Blob([response.data], {
+                type: format === "xlsx"
+                    ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    : "text/csv",
+            })
+
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = `dados.${format}`
+            a.click()
+            window.URL.revokeObjectURL(url)
+        }).catch((err) => {
+            console.log("erro ao baixar arquivo:", err)
+        })
+    }
 
     useEffect(() => {
         const fetchWeather = async () => {
@@ -112,6 +138,20 @@ const WeatherDashboard = () => {
                     </Card>
                 </section>
             </div>
+
+            <Button
+                onClick={() => setOpenModal(true)}
+                className="h-10 w-35 rounded-md fixed bottom-4 right-4 !bg-[#F5D10D] !hover:bg-[#e5c009] !text-black"
+            >
+                Baixar Dados
+            </Button>
+
+            <GetFilesModal
+                open={openModal}
+                onClose={() => setOpenModal(false)}
+                onSelect={handleSelect}
+            />
+
         </main>
     )
 }

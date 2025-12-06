@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.30.0",
+    "@json2csv/plainjs": "^7.0.6",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.1",
@@ -29,6 +30,8 @@
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
+    "exceljs": "^4.4.0",
+    "json2csv": "^6.0.0-alpha.2",
     "mongoose": "^8.0.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",

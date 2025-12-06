@@ -10,6 +10,10 @@ import { randomUUID } from 'crypto';
 export class UserService {
   constructor(@InjectModel(UserData.name) private userModel: Model<UserDataDocument>, private jwtService: JwtService) { }
 
+  async onModuleInit() {
+    await this.defaultAdmin()
+  }
+
   private createToken(user: UserData): string {
     const payload = { email: user.email, name: user.name, uuid: randomUUID() };
     return this.jwtService.sign(payload);
@@ -44,5 +48,33 @@ export class UserService {
       user: { id: user._id, email: user.email, name: user.name },
       token: this.createToken(user)
     };
+  }
+
+  async deleteUser(id: any): Promise<UserData | any> {
+    const deletedUser = await this.userModel.findByIdAndDelete({ _id: id.id }).exec()
+    if (!deletedUser) throw new BadRequestException
+
+    return deletedUser
+  }
+
+  updateUser(id: any, data: UserData): UserData | any {
+    const updatedUser = this.userModel.findOneAndUpdate(id, data).exec()
+    if (!updatedUser) throw new BadRequestException
+
+    return updatedUser
+  }
+
+  private async defaultAdmin() {
+    const exists = await this.userModel.findOne({ email: 'admin@admin.com' });
+
+    if (!exists) {
+      await this.userModel.create({
+        email: 'admin@admin.com',
+        name: 'Senhor Administrador',
+        password: await bcrypt.hash('123456', 10)
+      })
+
+      console.log('Admin criado! email: admin@admin.com | senha: 123456')
+    }
   }
 }

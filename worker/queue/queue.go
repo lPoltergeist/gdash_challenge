@@ -4,21 +4,32 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/rabbitmq/amqp091-go"
+	"go.uber.org/zap"
+
 	"gdash/challenge/data"
+	"gdash/challenge/logger"
 	"gdash/challenge/model"
 )
 
-func Consumer() <-chan model.WeatherData {
-	weatherChan := make(chan model.WeatherData, 5)
+type WeatherMessage struct {
+	Data model.WeatherData
+	Msg  amqp091.Delivery
+}
+
+func Consumer() <-chan WeatherMessage {
+	weatherChan := make(chan WeatherMessage, 5)
 
 	if data.RabbitConn == nil {
-		fmt.Printf("RabbitMQ connection is not initialized\n")
+		logger.Log.Error("RabbitMQ connection is not initialized")
 		panic("RabbitMQ connection is not initialized")
 	}
 
 	ch, err := data.RabbitConn.Channel()
 	if err != nil {
-		fmt.Printf("Failed to open a channel: %v\n", err)
+		logger.Log.Info("Failed to open a channel!",
+			zap.Any("Error:", err),
+		)
 		panic(err)
 	}
 
@@ -31,14 +42,17 @@ func Consumer() <-chan model.WeatherData {
 		nil,
 	)
 	if err != nil {
-		fmt.Printf("Failed to declare a queue: %v\n", err)
+		logger.Log.Info("Failed to declare a queue!",
+			zap.Any("Error:", err),
+		)
+
 		panic(err)
 	}
 
 	msgs, err := ch.Consume(
 		"weather_queue",
 		"",
-		true,
+		false,
 		false,
 		false,
 		false,
@@ -55,11 +69,22 @@ func Consumer() <-chan model.WeatherData {
 		for msg := range msgs {
 			var weather model.WeatherData
 			if err := json.Unmarshal(msg.Body, &weather); err != nil {
-				fmt.Printf("Error on unmarshalling json %v\n", err)
+
+				logger.ErrorLog("Failed to unmarshal message",
+					err, msg.Body, msg.MessageId)
+
+				msg.Nack(false, true)
 				continue
 			}
-			fmt.Printf("Received weather data!")
-			weatherChan <- weather
+
+			logger.Log.Info("Received message",
+				zap.Any("payload", weather),
+				zap.String("message_id", msg.MessageId))
+
+			weatherChan <- WeatherMessage{
+				Data: weather,
+				Msg:  msg,
+			}
 		}
 	}()
 	return weatherChan
