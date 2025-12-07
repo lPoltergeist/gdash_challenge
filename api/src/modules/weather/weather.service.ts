@@ -17,7 +17,6 @@ export class WeatherService {
 
   returnAllWeather(): Promise<WeatherData[]> {
     const weatherData = this.weatherModel.find().exec();
-    console.log('Fetching all weather data', weatherData);
 
     if (weatherData == null || weatherData === undefined) throw new Error('No weather data found');
 

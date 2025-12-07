@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import WeatherChart from '@/components/weather/weatherChart'
 import getWeatherIcon from '@/components/weatherDashboard/dinamicWeatherIcon'
 import GetFilesModal from '@/components/weatherDashboard/getFilesModal'
 import WeatherCard from '@/components/weatherDashboard/weatherCard'
@@ -132,11 +133,20 @@ const WeatherDashboard = () => {
                         </CardContent>
 
 
-                        <div className="mt-auto pt-4 text-sm text-slate-300 text-center opacity-80">
+                        <div className="mt-auto pt-4 text-sm text-slate-300 text-center opacity-80 ">
                             <span>Última atualização: {dateNow}</span>
                         </div>
                     </Card>
                 </section>
+
+                <CardContent className="w-full max-w-4xl mx-auto mt-10 glass rounded-2xl p-6 shadow-xl bg-white/5 backdrop-blur-lg border border-white/10">
+                    {weather ? (
+                        <WeatherChart data={weather} />
+                    ) : (
+                        <span>Carregando dados climáticos...</span>
+                    )}
+                </CardContent>
+
             </div>
 
             <Button

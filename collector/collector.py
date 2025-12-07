@@ -16,7 +16,7 @@ PARAMS = {
     "units": "metric",
 }
 
-INTERVAL = 60 * 60
+INTERVAL = 60 * 30
 
 RABBITMQ_HOST = 'rabbitmq'
 RABBITMQ_PASS = 'rabbitmq'

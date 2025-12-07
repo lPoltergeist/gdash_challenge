@@ -29,6 +29,8 @@ O objetivo é oferecer uma base sólida para aplicações que exigem coleta auto
 
 ## 🔁 Fluxo do Sistema
 
+![Diagram](https://i.imgur.com/7ZhIrAG.png)
+
 ### 1️⃣ Cadastro e Login
 1. Usuário cria conta no frontend  
 2. O frontend envia as credenciais ao backend  

@@ -119,7 +119,7 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: 500M
+          memory: 350M
 
   dashboard:
     build:
@@ -133,6 +133,11 @@ services:
         condition: service_started
       rabbitmq:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 200M
 
 volumes:
   rabbitmq_data:
