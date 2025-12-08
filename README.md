@@ -14,6 +14,10 @@ Ele integra **Collector (Python)**, **RabbitMQ**, **Worker (Go)**, **Backend (Ne
 
 O objetivo é oferecer uma base sólida para aplicações que exigem coleta automatizada, processamento assíncrono e visualização em tempo real.
 
+___
+
+![Dashboard](https://i.imgur.com/rxhu18o.png)
+
 ---
 
 ## 🏗️ Arquitetura Geral
@@ -47,7 +51,7 @@ O objetivo é oferecer uma base sólida para aplicações que exigem coleta auto
 - Logout adiciona o UUID do token à **blacklist**
 
 ### 3️⃣ Coleta de Dados (Collector - Python)
-- Executado periodicamente (1h)  
+- Executado periodicamente (30min)  
 - Consulta OpenWeatherMap  
 - Envia dados para a fila no RabbitMQ  
 
@@ -174,3 +178,6 @@ SkySage/
 
 ---
 
+Video de apresentação: https://youtu.be/laTjU0v0CU4
+
+---
