@@ -3,13 +3,14 @@ import { AuthService } from './auth.service';
 import { UserData } from 'src/schema/userData.schema';
 import express from 'express';
 import { PassThrough } from 'stream';
+import { LoginDto } from 'src/DTO/login';
 
 @Controller()
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
     @Post('api/auth/login')
-    async login(@Body() data: UserData, @Res({ passthrough: true }) res: express.Response): Promise<UserData | any> {
+    async login(@Body() data: LoginDto, @Res({ passthrough: true }) res: express.Response): Promise<UserData | any> {
         const result = await this.authService.login(data);
 
         if ('error' in result) return { error: result.error }
@@ -25,9 +26,13 @@ export class AuthController {
     }
 
     @Get('api/auth/logout')
-    async logout(@Req() req: express.Request) {
+    async logout(@Req() req: express.Request, @Res({ passthrough: true }) res: express.Response) {
         const token = req.cookies['token']
-        this.authService.logout(token)
+
+        if (token) this.authService.logout(token)
+        res.clearCookie('token', { path: '/' });
+
+        return { ok: true }
     }
 
     @Get('api/auth/me')

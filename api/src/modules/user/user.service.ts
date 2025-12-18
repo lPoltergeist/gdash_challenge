@@ -5,6 +5,8 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
+import { DeleteUserDto } from 'src/DTO/deleteUser';
+import { UpdateUserDto } from 'src/DTO/updateUser';
 
 @Injectable()
 export class UserService {
@@ -22,7 +24,7 @@ export class UserService {
   getUsers(): Promise<UserData | any> {
     let userData: Promise<UserData | any>;
 
-    userData = this.userModel.find().exec();
+    userData = this.userModel.find().select('-password').exec();
     return userData;
   }
 
@@ -50,15 +52,23 @@ export class UserService {
     };
   }
 
-  async deleteUser(id: any): Promise<UserData | any> {
-    const deletedUser = await this.userModel.findByIdAndDelete({ _id: id.id }).exec()
+  async deleteUser(id: any): Promise<DeleteUserDto | any> {
+    const deletedUser = await this.userModel.findByIdAndDelete({ _id: id }).exec()
     if (!deletedUser) throw new BadRequestException
 
-    return deletedUser
+    return {
+      email: deletedUser.email,
+      name: deletedUser.name
+    }
   }
 
-  async updateUser(id: any, data: UserData): Promise<UserData | any> {
+  async updateUser(id: any, data: UserData): Promise<UpdateUserDto | any> {
     if ('password' in data) data.password = await bcrypt.hash(data.password, 10)
+
+    const emailExists = await this.userModel.findOne({ email: data.email }).exec();
+    if (emailExists && emailExists._id.toString() !== id) {
+      throw new BadRequestException('Email já cadastrado!');
+    }
 
     const user = await this.userModel.findOneAndUpdate({ _id: id }, data, { new: true }).exec()
     if (!user) throw new BadRequestException

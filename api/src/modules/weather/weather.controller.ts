@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, Res } from '@nestjs/common';
 import { WeatherService } from './weather.service';
 import { WeatherData } from '../../schema/weatherData.schema';
 import express from 'express';
+import { ApiExcludeController, ApiExcludeEndpoint } from '@nestjs/swagger';
 
 @Controller()
 export class WeatherController {
@@ -13,6 +14,7 @@ export class WeatherController {
   }
 
   @Post('api/weather')
+  @ApiExcludeEndpoint()
   postWeatherData(@Body() data: WeatherData) {
     this.weatherService.insertWeather(data);
   }

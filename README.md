@@ -106,6 +106,19 @@ Endpoints:
 
 ## 🔌 Rotas da API
 
+### 📘 Documentação (Swagger)
+
+A API possui documentação interativa via **Swagger UI**, permitindo:
+- Visualizar todas as rotas disponíveis
+- Testar endpoints diretamente no navegador
+- Validar autenticação baseada em **cookie HttpOnly**
+
+📍 **URL**: /api/docs
+
+> ⚠️ **Observação**  
+> A autenticação utiliza **cookie HttpOnly**.  
+> Após executar o login (`/api/auth/login`) pelo Swagger, o cookie é armazenado automaticamente pelo navegador e reutilizado nas demais rotas de autenticação (ex: `/api/auth/me`).
+
 ### **/auth**
 | Método | Rota | Descrição |
 |--------|------|-----------|
@@ -176,8 +189,3 @@ SkySage/
  └─ docker-compose.yml
 ```
 
----
-
-Video de apresentação: https://youtu.be/laTjU0v0CU4
-
----

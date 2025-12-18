@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { BlacklistData, BlacklistDataDocument } from 'src/schema/blacklist.schema';
 import { randomUUID } from 'crypto';
+import { LoginDto } from 'src/DTO/login';
 
 @Injectable()
 export class AuthService {
@@ -28,7 +29,7 @@ export class AuthService {
         return true;
     }
 
-    async login(data: UserData): Promise<UserData | any> {
+    async login(data: LoginDto): Promise<UserData | any> {
         const user = await this.userModel.findOne({ email: data.email }).exec();
         if (!user) throw new UnauthorizedException('Usuário não encontrado.')
 
